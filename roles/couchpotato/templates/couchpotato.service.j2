@@ -1,0 +1,14 @@
+[Unit]
+Description=CouchPotato Server
+After=network.target
+
+[Service]
+WorkingDirectory={{ couchpotato_home }}
+ExecStart=/usr/bin/python {{ couchpotato_home }}/src/CouchPotato.py --daemon
+GuessMainPID=no
+Type=forking
+User={{ couchpotato_user }}
+Group={{ couchpotato_group }}
+
+[Install]
+WantedBy=multi-user.target

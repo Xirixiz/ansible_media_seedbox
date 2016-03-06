@@ -1,0 +1,15 @@
+[Unit]
+Description=NZBget Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/nzbget -c {{ nzbget_conf_file }} -D
+ExecStop=/usr/bin/nzbget -Q
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+User={{ nzbget_user }}
+Group={{ nzbget_group }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

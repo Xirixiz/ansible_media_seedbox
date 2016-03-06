@@ -1,0 +1,69 @@
+host: 127.0.0.1
+
+# group sickbeard/sab/cp will be part of
+user: "seedbox"
+user_group: "seedboxusers"
+
+# General Settings
+server_name: "localhost"
+
+# set the include_* vars to false if you don't use that service
+nginx_worker_processes: 4
+nginx_ssl_cert: "/etc/nginx/server.crt"
+nginx_ssl_key: "/etc/nginx/server.key"
+nginx_htpasswd_name: "xirixiz"
+nginx_htpasswd_password: "xirixiz"
+
+include_couchpotato: true
+couchpotato_port: 8020
+couchpotato_webroot: "/couchpotato"
+couchpotato_home: /opt/couchpotato
+couchpotato_user: couchpotato
+couchpotato_group: seedboxusers
+couchpotato_conf_path: "{{ couchpotato_home }}/.couchpotato"
+couchpotato_datas_dir:  "{{ couchpotato_home }}/data"
+couchpotato_url: https://github.com/CouchPotato/CouchPotatoServer.git
+couchpotato_service_template:
+  src: couchpotato.service.j2
+  dst: /etc/systemd/system/couchpotato.service
+
+include_sickrage: true
+sickrage_port: 8010
+sickrage_webroot: "/sickrage"
+sickrage_home: /opt/sickrage
+sickrage_user: sickrage
+sickrage_group: seedboxusers
+sickrage_conf_path: "{{ sickrage_home }}/.sickrage"
+sickrage_datas_dir: "{{ sickrage_home}}/data/"
+sickrage_url: https://github.com/SiCKRAGE/SiCKRAGE.git
+sickrage_service_template:
+  src: sickrage.service.j2
+  dst: /etc/systemd/system/sickrage.service
+
+include_nzbget: true
+nzbget_port: 8000
+nzbget_webroot: /nzbget
+nzbget_user: nzbget
+nzbget_group: seedboxusers
+nzbget_conf_file: /etc/nzbget.conf
+nzbget_download_dir: /data_1/downloads
+nzbget_service_template:
+  src: nzbget.service.j2
+  dst: /etc/systemd/system/nzbget.service
+
+include_transmission: true
+transmission_port: 8030
+transmission_webroot: "/transmission"
+transmission_download_dir: /data_1/torrents
+transmission_user: debian-transmission
+transmission_group: seedboxusers
+transmission_conf_file: /etc/transmission-daemon/settings.json
+transmission_service_template:
+  src: transmission.service.j2
+  dst: /etc/systemd/system/transmission.service
+
+include_plex: true
+plex_webroot_api: "/plexapi"
+plex_webroot_web: "/web"
+plex_port: 32400
+plex_url: https://downloads.plex.tv/plex-media-server/0.9.15.6.1714-7be11e1/plexmediaserver_0.9.15.6.1714-7be11e1_amd64.deb

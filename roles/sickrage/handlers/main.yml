@@ -1,0 +1,7 @@
+---
+
+  - name: Reload Sickrage service config
+    command: systemctl daemon-reloads
+
+  - name: Restart SickRage service
+    service: name=sickrage state=restarted

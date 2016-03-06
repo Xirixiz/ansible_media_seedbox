@@ -1,0 +1,72 @@
+---
+
+  - name: Sickrage - Ensure SickRage service group exists
+    group:
+      name: "{{ sickrage_group }}"
+      system: true
+      state: present
+
+  - name: Sickrage - Ensure SickRage service user exists
+    user:
+      name: "{{ sickrage_user }}"
+      group: "{{ sickrage_group }}"
+      home: "{{ sickrage_home }}"
+      system: true
+      state: present
+
+  - name: Sickrage - Ensure SickRage data directory exists
+    file:
+      dest: "{{ sickrage_datas_dir }}"
+      owner: "{{ sickrage_user }}"
+      group: "{{ sickrage_group }}"
+      state: directory
+
+  - name: Sickrage - Ensure SickRage config directory exists
+    file:
+      dest: "{{ sickrage_conf_path }}"
+      owner: "{{ sickrage_user }}"
+      group: "{{ sickrage_group }}"
+      recurse: true
+      state: directory
+
+  - name: Sickrage - Fetch SickRage source code
+    git:
+      repo: "{{ sickrage_url }}"
+      dest: "{{ sickrage_home }}/src"
+      update: true
+      force: true
+      accept_hostkey: true
+    become: true
+    become_user: "{{ sickrage_user }}"
+
+  - name: Sickrage - Ensure Python files are 0755
+    command: find {{ sickrage_home }} -type f -name '*.py' -exec chmod 0755 {} \;
+
+  - name: Sickrage - Deploy SickRage service manifest
+    template:
+      src: "{{ sickrage_service_template.src }}"
+      dest: "{{ sickrage_service_template.dst }}"
+      owner: root
+      group: root
+      mode: 0600
+
+  - name: Sickrage - Configure SickRage configuration
+    ini_file:
+      dest: "{{ sickrage_conf_path }}/config.ini"
+      owner: "{{ sickrage_user }}"
+      group: "{{ sickrage_group }}"
+      section: "{{ item.section }}"
+      option: "{{ item.option }}"
+      value: "{{ item.value }}"
+    with_items:
+      - { section: "General", option: "web_port", value: "{{ sickrage_port }}" }
+      - { section: "General", option: "web_root", value: "{{ sickrage_webroot }}" }
+    become: true
+
+  - meta: flush_handlers
+
+  - name: Sickrage - Ensure the sickrage service is running and enabled on boot
+    service:
+      name: sickrage
+      state: started
+      enabled: yes

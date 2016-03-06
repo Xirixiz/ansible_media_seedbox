@@ -1,0 +1,7 @@
+---
+
+  - name: Reload nginx service config
+    command: systemctl daemon-reload
+
+  - name: Restart nginx service
+    service: name=nginx state=restarted

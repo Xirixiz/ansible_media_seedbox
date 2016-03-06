@@ -1,0 +1,51 @@
+---
+
+  #- name: Remove default public key
+  #  file: dest=/home/{{ base_user }}"/.ssh/authorized_keys state=absent
+  #- name: Add user public key
+  #  authorized_key: user="{{ base_user }}" key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}" state=present
+
+  - name: Base - Stop firewall service
+    service:
+      name: ufw
+      state: stopped
+
+  - name: Base - Add multiverse repository
+    apt_repository:
+      repo: "{{ item }}"
+    register: multiverse_ppa_added
+    with_items:
+      - "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse"
+      - "deb-src http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse"
+      - "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse"
+      - "deb-src http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse"
+
+  - name: Base - Update apt cache
+    apt:
+      update_cache: true
+    when: multiverse_ppa_added | changed
+
+  - name: Base - Install base software
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: true
+    with_items:
+      - zsh
+      - wget
+      - software-properties-common
+      - locate
+      - tree
+      - g++
+      - make
+      - git
+      - git-core
+      - python-passlib
+      - python-lxml
+      - python-apt
+      - python-pycurl
+      - python-setuptools
+      - python-openssl
+      - nfs-client
+      - unzip
+      - unrar

@@ -1,0 +1,7 @@
+---
+
+  - name: Reload transmission service config
+    command: systemctl daemon-reload
+    
+  - name: Restart transmission service
+    service: name=transmission-daemon state=restarted

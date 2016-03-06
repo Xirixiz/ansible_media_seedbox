@@ -1,0 +1,57 @@
+---
+
+  - name: NZBget - Ensure nzbget service group exists
+    group:
+      name: "{{ nzbget_group }}"
+      system: true
+      state: present
+
+  - name: NZBget - Ensure nzbget service user exists
+    user:
+      name: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+      system: true
+      state: present
+
+  - name: NZBget - Ensure nzbget data directory exists
+    file:
+      dest: "{{ nzbget_download_dir }}"
+      owner: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+      state: directory
+
+  - name: NZBget - Install nzbget
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - nzbget
+
+  - name: NZBget - Deploy nzbget service manifest
+    template:
+      src: "{{ nzbget_service_template.src }}"
+      dest: "{{ nzbget_service_template.dst }}"
+      owner: root
+      group: root
+      mode: 0600
+    notify:
+      - Reload nzbget service config
+      - Restart nzbget service
+
+  - name: NZBget - Copy default config files
+    template:
+      src: "nzbget.conf.j2"
+      dest: "/etc/nzbget.conf"
+      owner: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+    notify:
+      - Reload nzbget service config
+      - Restart nzbget service
+
+  - meta: flush_handlers
+
+  - name: NZBget - Ensure the nzbget service is running and enabled on boot
+    service:
+      name: nzbget
+      state: started
+      enabled: yes
