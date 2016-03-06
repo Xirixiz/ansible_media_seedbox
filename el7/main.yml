@@ -1,0 +1,18 @@
+- hosts: all
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  roles:
+    - nginx
+    - role: couchpotato
+      when: include_couchpotato == true
+    - role: sickrage
+      when: include_sickrage == true
+    - role: nzbget
+      when: include_nzbget == true
+    - role: transmission
+      when: include_transmission == true
+    - role: plex
+      when: include_plex == true

@@ -1,0 +1,70 @@
+---
+
+  - name: Nginx - Ensure nginx is installed
+    yum:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - nginx
+      - htop
+
+  - name: Nginx - Configure nginx nginx.conf
+    template:
+      src: "nginx.conf.j2"
+      dest: "/etc/nginx/nginx.conf"
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - Restart nginx service
+
+  - name: Nginx - Configure nginx services.conf
+    template:
+      src: "services.conf.j2"
+      dest: "/etc/nginx/services.conf"
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - Restart nginx service
+
+  - name: Nginx - Configure nginx proxy-control.conf
+    template:
+      src: "proxy-control.conf.j2"
+      dest: "/etc/nginx/proxy-control.conf"
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - Restart nginx service
+
+  - name: Nginx - Configure nginx auth-basic.conf
+    template:
+      src: "auth-basic.conf.j2"
+      dest: "/etc/nginx/auth-basic.conf"
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - Restart nginx service
+
+  - name: Nginx - Configure nginx .htpasswd users file
+    htpasswd:
+      path: "/etc/nginx/.htpasswd"
+      name: "{{ nginx_htpasswd_name }}"
+      password: "{{ nginx_htpasswd_password }}"
+      owner: root
+      group: root
+      mode: 0644
+    when: nginx_htpasswd_name != "" and nginx_htpasswd_password != ""
+
+  - name: Nginx - Generate ssl certificate
+    command: openssl req -new -nodes -x509 -subj "/C=US/ST=Oregon/L=Portland/O=IT/CN={{ server_name }}" -days 3650 -keyout {{ nginx_ssl_key }} -out {{ nginx_ssl_cert }} -extensions v3_ca creates={{ nginx_ssl_cert }}
+
+  - meta: flush_handlers
+
+  - name: Nginx - Ensure the nginx service is running and enabled on boot
+    service:
+      name: nginx
+      state: running
+      enabled: yes

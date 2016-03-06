@@ -1,0 +1,72 @@
+---
+
+  - name: NZBget - Ensure nzbget service group exists
+    group:
+      name: "{{ nzbget_group }}"
+      system: true
+      state: present
+
+  - name: NZBget - Ensure nzbget service user exists
+    user:
+      name: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+      system: true
+      state: present
+
+  - name: NZBget - Ensure nzbget data directory exists
+    file:
+      dest: "{{ nzbget_download_dir }}"
+      owner: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+      state: directory
+
+  - name: NZBget - Fetch nzbget installer
+    get_url:
+      url: "{{ nzbget_url }}"
+      dest: /tmp/
+      mode: 0755
+
+  - name: NZBget - Run nzbget installer
+    command: /tmp/nzbget-latest-bin-linux.run --destdir "{{ nzbget_home }}"
+
+  - name: NZBget - Set nzbget directory Owner
+    file:
+      path: "{{ nzbget_home }}"
+      owner: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+      state: directory
+      recurse: yes
+
+  - name: NZBget - Clean up installer
+    file:
+      path: /tmp/nzbget-latest-bin-linux.run
+      state: absent
+
+  - name: NZBget - Deploy nzbget service manifest
+    template:
+      src: "{{ nzbget_service_template.src }}"
+      dest: "{{ nzbget_service_template.dst }}"
+      owner: root
+      group: root
+      mode: 0600
+    notify:
+      - Reload nzbget service config
+      - Restart nzbget service
+
+  - name: NZBget - Copy default config files
+    template:
+      src: "nzbget.conf.j2"
+      dest: "{{ nzbget_conf_file }}"
+      owner: "{{ nzbget_user }}"
+      group: "{{ nzbget_group }}"
+    notify:
+      - Reload nzbget service config
+      - Restart nzbget service
+
+  - meta: flush_handlers
+
+  - name: NZBget - Ensure the nzbget service is running and enabled on boot
+    service:
+      name: nzbget
+      state: started
+      enabled: yes

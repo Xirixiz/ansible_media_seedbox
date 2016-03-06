@@ -1,0 +1,14 @@
+[Unit]
+Description=Transmission Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/transmission-daemon -f --config-dir {{ transmission_conf_path }}
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=process
+User={{ transmission_user }}
+Group={{ transmission_group }}
+Restart=on-failure
+
+[Install]
+WantedBy = multi-user.target

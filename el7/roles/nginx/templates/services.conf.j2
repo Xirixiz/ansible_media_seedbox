@@ -1,0 +1,51 @@
+{% if include_plex %}
+# Plex
+location {{ plex_webroot_api }} {
+        proxy_pass         http://127.0.0.1:{{ plex_port }};
+        proxy_redirect     http://127.0.0.1:{{ plex_port }} https://$host{{ plex_webroot_api }};
+#        include            proxy-control.conf;
+}
+
+# Plex - Web
+location {{ plex_webroot_web }} {
+        proxy_pass         http://127.0.0.1:{{ plex_port }}{{ plex_webroot_web }};
+        proxy_redirect     http://127.0.0.1:{{ plex_port }}{{ plex_webroot_web }} https://$host{{ plex_webroot_web }};
+#        include            proxy-control.conf;
+}
+{% endif %}
+
+{% if include_nzbget %}
+# NZBget
+location {{ nzbget_webroot }} {
+        proxy_pass         http://127.0.0.1:{{ nzbget_port }};
+        proxy_redirect     http://127.0.0.1:{{ nzbget_port }} https://$host{{ nzbget_webroot }};
+        include            proxy-control.conf;
+}
+{% endif %}
+
+{% if include_sickrage %}
+# Sickrage
+location {{ sickrage_webroot }} {
+        proxy_pass         http://127.0.0.1:{{ sickrage_port }};
+        proxy_redirect     http://127.0.0.1:{{ sickrage_port }} https://$host{{ sickrage_webroot }};
+        include            proxy-control.conf;
+}
+{% endif %}
+
+{% if include_couchpotato %}
+# Couchpotato
+location {{ couchpotato_webroot }} {
+        proxy_pass         http://127.0.0.1:{{ couchpotato_port }};
+        proxy_redirect     http://127.0.0.1:{{ couchpotato_port }} https://$host{{ couchpotato_webroot }};
+        include            proxy-control.conf;
+}
+{% endif %}
+
+{% if include_transmission %}
+# Transmission
+location {{ transmission_webroot }} {
+        proxy_pass         http://127.0.0.1:{{ transmission_port }};
+        proxy_redirect     http://127.0.0.1:{{ transmission_port }} https://$host{{ transmission_webroot }};
+        include            proxy-control.conf;
+}
+{% endif %}

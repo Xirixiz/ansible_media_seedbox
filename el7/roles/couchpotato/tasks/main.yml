@@ -1,0 +1,78 @@
+---
+
+  - name: CouchPotato - Ensure CouchPotato service group exists
+    group:
+      name: "{{ couchpotato_group }}"
+      system: true
+      state: present
+
+  - name: CouchPotato - Ensure CouchPotato service user exists
+    user:
+      name: "{{ couchpotato_user }}"
+      group: "{{ couchpotato_group }}"
+      home: "{{ couchpotato_home }}"
+      system: true
+      state: present
+
+  - name: CouchPotato - Ensure CouchPotato data directory exists
+    file:
+      dest: "{{ couchpotato_datas_dir }}"
+      owner: "{{ couchpotato_user }}"
+      group: "{{ couchpotato_group }}"
+      state: directory
+
+  - name: CouchPotato - Ensure CouchPotato config directory exists
+    file:
+      dest: "{{ couchpotato_conf_path }}"
+      owner: "{{ couchpotato_user }}"
+      group: "{{ couchpotato_group }}"
+      recurse: true
+      state: directory
+
+  - name: CouchPotato - Fetch CouchPotato source code
+    git:
+      repo: "{{ couchpotato_url }}"
+      dest: "{{ couchpotato_home }}/src"
+      update: true
+      force: true
+      accept_hostkey: true
+    become: true
+    become_user: "{{ couchpotato_user }}"
+
+  - name: CouchPotato - Ensure Python files are 0755
+    command: find {{ couchpotato_home }} -type f -name '*.py' -exec chmod 0755 {} \;
+
+  - name: CouchPotato - Deploy CouchPotato service manifest
+    template:
+      src: "{{ couchpotato_service_template.src }}"
+      dest: "{{ couchpotato_service_template.dst }}"
+      owner: root
+      group: root
+      mode: 0600
+    notify:
+      - Reload CouchPotato service config
+      - Restart CouchPotato service
+
+  - name: CouchPotato - Configure CouchPotato configuration
+    ini_file:
+      dest: "{{ couchpotato_conf_path }}/settings.conf"
+      owner: "{{ couchpotato_user }}"
+      group: "{{ couchpotato_group }}"
+      section: "{{ item.section }}"
+      option: "{{ item.option }}"
+      value: "{{ item.value }}"
+    with_items:
+      - { section: "core", option: "port", value: "{{ couchpotato_port }}" }
+      - { section: "core", option: "url_base", value: "{{ couchpotato_webroot }}" }
+    become: true
+    notify:
+      - Reload CouchPotato service config
+      - Restart CouchPotato service
+
+  - meta: flush_handlers
+
+  - name: CouchPotato - Ensure the CouchPotato service is running and enabled on boot
+    service:
+      name: couchpotato
+      state: started
+      enabled: yes

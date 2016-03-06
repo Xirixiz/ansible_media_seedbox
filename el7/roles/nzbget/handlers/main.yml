@@ -1,0 +1,7 @@
+---
+
+  - name: Reload nzbget service config
+    command: systemctl daemon-reload
+
+  - name: Restart nzbget service
+    service: name=nzbget state=restarted

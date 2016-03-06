@@ -1,0 +1,50 @@
+---
+
+  #- name: Remove default public key
+  #  file: dest=/home/{{ base_user }}"/.ssh/authorized_keys state=absent
+  #- name: Add user public key
+  #  authorized_key: user="{{ base_user }}" key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}" state=present
+
+#  - name: Base - Install EPEL repo.
+#    yum:
+#      name: "http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm"
+#      state: present
+#    register: result
+#    until: '"failed" not in result'
+#    retries: 5
+#    delay: 10
+
+  - name: Install epel repo
+    yum:
+      name: epel-release
+      state: latest
+
+  - name: Base - Update yum
+    yum:
+      name: "*"
+      state: latest
+
+  - name: Base - Install base software
+    yum:
+      name: "{{ item }}"
+      state: present
+      update_cache: true
+    with_items:
+      - zsh
+      - wget
+      #- software-properties-common
+      - mlocate
+      - tree
+      #- g++
+      - make
+      - git
+      - git-core
+      - python-passlib
+      - python-lxml
+      #- python-apt
+      - python-pycurl
+      - python-setuptools
+      #- python-openssl
+      #- nfs-client
+      - unzip
+      #- unrar

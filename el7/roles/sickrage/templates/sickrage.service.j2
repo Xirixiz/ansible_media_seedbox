@@ -1,0 +1,14 @@
+[Unit]
+Description=SickRage Server
+After=network.target
+
+[Service]
+WorkingDirectory={{ sickrage_home }}
+ExecStart=/usr/bin/python {{ sickrage_home }}/src/SickBeard.py --config {{ sickrage_conf_path }}/config.ini --daemon
+GuessMainPID=no
+Type=forking
+User={{ sickrage_user }}
+Group={{ sickrage_group }}
+
+[Install]
+WantedBy=multi-user.target

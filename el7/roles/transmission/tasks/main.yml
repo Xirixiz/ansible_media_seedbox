@@ -1,0 +1,57 @@
+---
+
+  - name: Transmission - Install transmission
+    yum:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - epel-release
+      - transmission-cli
+      - transmission-common
+      - transmission-daemon
+
+  - name: Transmission - Ensure transmission service group exists
+    group:
+      name: "{{ transmission_group }}"
+      system: true
+      state: present
+
+  - name: Transmission - Ensure transmission service user exists
+    user:
+      name: "{{ transmission_user }}"
+      group: "{{ transmission_group }}"
+      system: true
+      state: present
+      shell: /bin/nologin
+
+  - name: Transmission - Ensure transmission data directory exists
+    file:
+      dest: "{{ transmission_download_dir }}"
+      owner: "{{ transmission_user }}"
+      group: "{{ transmission_group }}"
+      state: directory
+    notify: Reload transmission service config
+
+  - name: Transmission - Start transmission service
+    service:
+      name: transmission-daemon
+      state: started
+
+  - name: Transmission - Stop transmission service
+    service:
+      name: transmission-daemon
+      state: stopped
+
+  - name: Transmission - Add configuration file
+    template:
+      src: "settings.json.j2"
+      dest: "{{ transmission_conf_file }}"
+      owner: "{{ transmission_user }}"
+      group: "{{ transmission_group }}"
+      mode: 0755
+
+  - name: Transmission - Ensure the transmission service is running and enabled on boot
+    service:
+      name: transmission-daemon
+      state: started
+      enabled: yes

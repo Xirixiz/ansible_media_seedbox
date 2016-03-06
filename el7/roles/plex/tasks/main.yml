@@ -1,0 +1,14 @@
+  - name: Plex - Download plexmediaserver
+    get_url:
+      url: "{{ plex_url }}"
+      dest: /tmp/plexmediaserver.rpm
+
+  - name: Plex - Install plexmediaserver
+    yum:
+      name: /tmp/plexmediaserver.rpm
+      state: installed
+
+  - name: Plex - Start plexmediaserver
+    service:
+      name: plexmediaserver
+      state: started
